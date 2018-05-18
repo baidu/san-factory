@@ -36,4 +36,31 @@ describe('createInsance', () => {
 
         instance.dispose();
     });
+
+    it('by el reverse', done => {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<h4>Hello {{name}}</h4>'
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                el: document.getElementById('by-el-reverse')
+            }
+        });
+
+        expect(instance.el.innerHTML).toContain('Hello San');
+
+        instance.data.set('name', 'ER');
+        instance.nextTick(() => {
+            expect(instance.el.innerHTML).toContain('Hello ER');
+            instance.dispose();
+            done();
+        })
+    });
 });
