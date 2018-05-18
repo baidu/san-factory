@@ -63,4 +63,47 @@ describe('createInsance', () => {
             done();
         })
     });
+
+    it('setter and property inject', () => {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<h4>Hello {{name}}</h4>'
+                },
+
+                setAdder: function (adder) {
+                    this.add = adder;
+                },
+
+                doAdd: function (a, b) {
+                    return this.add(a, b);
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            },
+            properties: {
+                adder: function (a, b) {
+                    return a + b + 10;
+                },
+
+                max: function (a, b) {
+                    return Math.max(a, b);
+                }
+            }
+        });
+
+        instance.attach(document.body);
+        expect(instance.doAdd(5, 10)).toBe(25);
+        expect(instance.max(5, 10)).toBe(10);
+
+        instance.dispose();
+    });
 });
