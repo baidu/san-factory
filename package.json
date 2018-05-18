@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Application State Management for San",
   "scripts": {
-    "build": "rm -rf dist && cp src/index.js dist/san-factory.source.js && uglifyjs dist/san-factory.source.js -mco dist/san-factory.js",
+    "build": "rm -rf dist && cp src/index.js dist/san-factory.source.js && uglifyjs dist/san-factory.source.js -mco dist/san-factory.js"
   },
   "main": "dist/san-factory.source.js",
   "unpkg": "dist/san-factory",
