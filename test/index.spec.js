@@ -1,18 +1,24 @@
+/**
+ * @file 测试入口文件
+ * @author LeuisKen <leuisken@gmail.com>
+ */
 
-describe('main', () => {
+/* global san SanFactory */
 
-    it('env check', () => {
+describe('main', function () {
+
+    it('env check', function () {
         expect(san.version).toBe('3.5.9');
         expect(require('san').version).toBe('3.5.4');
     });
 
-    it('is a function', () => {
+    it('is a function', function () {
         expect(typeof SanFactory).toBe('function');
     });
 });
 
-describe('createInsance', () => {
-    it('by data option', () => {
+describe('createInsance', function () {
+    it('by data option', function () {
         var factory = new SanFactory({
             san: san,
             components: {
@@ -37,7 +43,7 @@ describe('createInsance', () => {
         instance.dispose();
     });
 
-    it('by el reverse', done => {
+    it('by el reverse', function (done) {
         var factory = new SanFactory({
             san: san,
             components: {
@@ -57,14 +63,14 @@ describe('createInsance', () => {
         expect(instance.el.innerHTML).toContain('Hello San');
 
         instance.data.set('name', 'ER');
-        instance.nextTick(() => {
+        instance.nextTick(function () {
             expect(instance.el.innerHTML).toContain('Hello ER');
             instance.dispose();
             done();
-        })
+        });
     });
 
-    it('setter and property inject', () => {
+    it('setter and property inject', function () {
         var factory = new SanFactory({
             san: san,
             components: {
@@ -74,13 +80,13 @@ describe('createInsance', () => {
 
                 setAdder: function (adder) {
                     this.add = adder;
-                },
-
-                doAdd: function (a, b) {
-                    return this.add(a, b);
                 }
             }
         });
+
+        function doAdd(a, b) {
+            return this.add(a, b);
+        }
 
         var instance = factory.createInstance({
             component: 'test',
@@ -101,9 +107,124 @@ describe('createInsance', () => {
         });
 
         instance.attach(document.body);
-        expect(instance.doAdd(5, 10)).toBe(25);
+        expect(doAdd.call(instance, 5, 10)).toBe(25);
         expect(instance.max(5, 10)).toBe(10);
 
+        instance.dispose();
+    });
+
+    it('should support child component with key', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div><x-child name="{{name}}"/></div>',
+                    components: {
+                        'x-child': 'child'
+                    }
+                },
+
+                child: {
+                    template: '<h4>Hello {{name}}</h4>'
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
+        instance.dispose();
+    });
+
+    it('should support child component with plain object', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div><x-child name="{{name}}"/></div>',
+                    components: {
+                        'x-child': {
+                            template: '<h4>Hello {{name}}</h4>'
+                        }
+                    }
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
+        instance.dispose();
+    });
+
+    it('should support child component with san component class', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div><x-child name="{{name}}"/></div>',
+                    components: {
+                        'x-child': san.defineComponent({
+                            template: '<h4>Hello {{name}}</h4>'
+                        })
+                    }
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
+        instance.dispose();
+    });
+
+    it('should support "self" component', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div>'
+                        + '<h4 s-if="done">Hello {{name}}</h4>'
+                        + '<x-child s-else name="{{name}}" done/>'
+                        + '</div>',
+                    components: {
+                        'x-child': 'self'
+                    }
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
         instance.dispose();
     });
 });
