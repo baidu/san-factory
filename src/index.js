@@ -17,29 +17,16 @@
      * @param {Object} factoryConfig.components 组件prototype对象集合
      */
     function SanFactory(factoryConfig) {
-        factoryConfig = factoryConfig || {};
-
-        // #[begin] error
-        if (typeof name !== 'string') {
-            throw new Error('[SAN-FACTORY ERROR] name must be a string.');
-        }
-        // #[end]
-
-        // #[begin] error
-        if (typeof factoryConfig.san.defineComponent !== 'function') {
-            throw new Error('[SAN-FACTORY ERROR] please check the san runtime that you provided.');
-        }
-        // #[end]
-
-        this.san = factoryConfig.san;
-        this.components = factoryConfig.components || {};
+        this.config = factoryConfig || {};
+        // 用于缓存生成好的构造类的对象
+        this.ComponentClasses = {};
     }
 
     /**
      * 创建组件实例
      *
      * @param {Object} instanceConfig 实例创建的配置对象
-     * @param {string} instanceConfig.name 组件类名称，与factoryConfig.components的key对应
+     * @param {string} instanceConfig.component 组件类名称，与factoryConfig.components的key对应
      * @param {Object?} instanceConfig.properties 注入实例属性的对象
      * @param {Object?} instanceConfig.options 实例创建时的参数
      * @param {Object?} instanceConfig.options.data 实例创建的初始化数据
@@ -47,109 +34,119 @@
      * @return {san.Component}
      */
     SanFactory.prototype.createInstance = function (instanceConfig) {
-        instanceConfig = instanceConfig || {};
-        var name = instanceConfig.name;
-
-        // #[begin] error
-        if (typeof name !== 'string') {
-            throw new Error('[SAN-FACTORY ERROR] instanceConfig.name must be a string.');
+        if (typeof instanceConfig !== 'object') {
+            return;
         }
-        // #[end]
 
-        var ComponentClass = this.getComponentClass(name);
-        var options = instanceConfig.options || {};
-        var instance = new ComponentClass(options);
+        var component = instanceConfig.component;
+        var ComponentClass = component ? this.getComponentClassByName(component) : null;
 
+        if (!ComponentClass) {
+            return;
+        }
+
+        var instance = new ComponentClass(instanceConfig.options);
         var properties = instanceConfig.properties;
-        if (properties) {
-            return extend(instance, properties);
+
+        for (var key in properties) {
+            if (properties.hasOwnProperty(key)) {
+                var method = 'set' + key.slice(0, 1).toUpperCase() + key.slice(1);
+                var property = properties[key];
+                var setter = this.config.components[method];
+
+                if (typeof setter === 'function') {
+                    setter.call(instance, properties[key]);
+                }
+                else {
+                    instance[key] = property;
+                }
+            }
         }
 
         return instance;
     };
 
     /**
-     * 获取组件类
+     * 根据name（key值）获取组件类
      *
      * @param {string} name 组件类名称，与factoryConfig.components的key对应
      * @return {Function}
      */
-    SanFactory.prototype.getComponentClass = function (name) {
-
-        // #[begin] error
-        if (typeof name !== 'string') {
-            throw new Error('[SAN-FACTORY ERROR] name must be a string.');
+    SanFactory.prototype.getComponentClassByName = function (name) {
+        if (!isEnvValid(this.config)) {
+            return;
         }
-        // #[end]
 
-        var proto = this.components[name];
+        var ComponentClasses = this.ComponentClasses;
 
-        // #[begin] error
-        if (proto == null) {
-            throw new Error('[SAN-FACTORY ERROR] can not find component prototype by name: ' + name + '.');
+        // 如果有缓存
+        if (ComponentClasses[name]) {
+            return ComponentClasses[name];
         }
-        // #[end]
 
-        return wrapper(this.san, proto, this.components);
-
+        var componentClassProto = this.config.components[name];
+        var realComponentClass = this.getComponentClassByProto(componentClassProto);
+        ComponentClasses[name] = realComponentClass;
+        return realComponentClass;
     };
 
     /**
      * 将组件类的prototype对象包装成san的组件类
      *
-     * @param {Object} san san环境
-     * @param {Object} proto 待包装的组件类prototype对象
-     * @param {Object} components 全局的组件prototype对象集合
+     * @param {Object} componentClassProto 待包装的组件类prototype对象
      * @return {Function} 组件类
      */
-    function wrapper(san, proto, components) {
-        if (typeof proto === 'function') {
-            return proto;
+    SanFactory.prototype.getComponentClassByProto = function (componentClassProto) {
+        if (!isEnvValid(this.config)) {
+            return;
         }
 
-        var subComponents = proto.components;
+        var realComponentClassProto = {};
+        for (var key in componentClassProto) {
+            if (componentClassProto.hasOwnProperty(key)) {
+                var protoItem = componentClassProto[key];
 
-        // 如果原型实现不依赖其他子组件，直接使用原型创建san组件类
-        if (subComponents == null) {
-            return san.defineComponent(proto);
-        }
-
-        // 否则，递归子组件原型
-        for (var name in subComponents) {
-            if (subComponents.hasOwnProperty(name)) {
-                // 这里的target可以是字符串或者对象
-                var target = subComponents[name];
-                // 如为字符串，则去全局的组件prototype对象集合里找对应的原型
-                if (typeof target === 'string' && components[target]) {
-                    subComponents[name] = wrapper(san, components[target], components);
-                    components[target] = subComponents[name];
+                if (key !== 'components') {
+                    realComponentClassProto[key] = protoItem;
                 }
-                // 其他情况，仅认为值为对象，将target视为原型传入即可
-                subComponents[name] = wrapper(san, target, components);
+                // 处理 components 中的 string
+                // 构造并替换为实际的组件类
+                else {
+                    var realComponents = {};
+                    realComponentClassProto.components = realComponents;
+
+                    for (var cmptKey in protoItem) {
+                        var cmptItem = protoItem[cmptKey];
+                        // self 或者 组件的构造器时，不用重新 getComponentClass
+                        if (cmptItem === 'self' || typeof cmptItem === 'function') {
+                            realComponents[cmptKey] = cmptItem;
+                        }
+                        // 非 self 的字符串，直接调用 getComponentClass
+                        else if (typeof cmptItem === 'string') {
+                            realComponents[cmptKey] = this.getComponentClassByName(cmptItem);
+                        }
+                        // 其他情况（proto对象），则调用wrapper包装
+                        else {
+                            realComponents[cmptKey] = this.getComponentClassByProto(cmptItem);
+                        }
+                    }
+                }
             }
         }
-
-        return san.defineComponent(proto);
-    }
+        return this.config.san.defineComponent(realComponentClassProto);
+    };
 
     /**
-     * 对象属性拷贝
+     * 检测config对象是否符合预期
      *
-     * @param {Object} target 目标对象
-     * @param {Object} source 源对象
-     * @return {Object} 返回目标对象
+     * @param {Object} config 工厂类config对象
+     * @return {boolean} 是否符合预期
      */
-    function extend(target, source) {
-        for (var key in source) {
-            if (source.hasOwnProperty(key)) {
-                var value = source[key];
-                if (typeof value !== 'undefined') {
-                    target[key] = value;
-                }
-            }
+    function isEnvValid(config) {
+        if (config.san && config.components) {
+            return true;
         }
-
-        return target;
+        return false;
     }
 
     // export
