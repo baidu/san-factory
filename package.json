@@ -1,7 +1,7 @@
 {
   "name": "san-factory",
   "version": "0.0.1",
-  "description": "Application State Management for San",
+  "description": "Component Factory for San",
   "scripts": {
     "build": "rm -rf dist && mkdir dist && cp src/index.js dist/san-factory.source.js && uglifyjs dist/san-factory.source.js -mco dist/san-factory.js"
   },
