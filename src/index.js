@@ -40,7 +40,7 @@
         }
 
         var component = instanceConfig.component;
-        var ComponentClass = component ? this.getComponentClassByName(component) : null;
+        var ComponentClass = component ? this.getComponentClass(component) : null;
 
         if (!ComponentClass) {
             return;
@@ -73,7 +73,7 @@
      * @param {string} name 组件类名称，与factoryConfig.components的key对应
      * @return {Function}
      */
-    SanFactory.prototype.getComponentClassByName = function (name) {
+    SanFactory.prototype.getComponentClass = function (name) {
         if (!isEnvValid(this.config)) {
             return;
         }
@@ -86,7 +86,7 @@
         }
 
         var componentClassProto = this.config.components[name];
-        var realComponentClass = this.getComponentClassByProto(componentClassProto);
+        var realComponentClass = this.defineComponent(componentClassProto);
         ComponentClasses[name] = realComponentClass;
         return realComponentClass;
     };
@@ -97,7 +97,7 @@
      * @param {Object} componentClassProto 待包装的组件类prototype对象
      * @return {Function} 组件类
      */
-    SanFactory.prototype.getComponentClassByProto = function (componentClassProto) {
+    SanFactory.prototype.defineComponent = function (componentClassProto) {
         if (!isEnvValid(this.config)) {
             return;
         }
@@ -124,11 +124,11 @@
                         }
                         // 非 self 的字符串，直接调用 getComponentClass
                         else if (typeof cmptItem === 'string') {
-                            realComponents[cmptKey] = this.getComponentClassByName(cmptItem);
+                            realComponents[cmptKey] = this.getComponentClass(cmptItem);
                         }
                         // 其他情况（proto对象），则调用wrapper包装
                         else {
-                            realComponents[cmptKey] = this.getComponentClassByProto(cmptItem);
+                            realComponents[cmptKey] = this.defineComponent(cmptItem);
                         }
                     }
                 }
