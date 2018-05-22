@@ -155,10 +155,10 @@ var instance = factory.createInstance({
 instance.attach(document.body);
 ```
 
-当然，如果你想直接获取`test`组件的构造函数，可以通过`getComponentClassByName`直接获取。
+当然，如果你想直接获取`test`组件的构造函数，可以通过`getComponentClass`直接获取。
 
 ```js
-var ComponentClass = factory.getComponentClassByName('test');
+var ComponentClass = factory.getComponentClass('test');
 var instance = new ComponentClass({
     data: {
         name: 'San'
@@ -235,6 +235,52 @@ var factory = new SanFactory({
 
 比如我编写了一个`form`组件的原型，其依赖了`x-input: 'input'`子组件。我可以创建多个工厂类，其包含不同的`components.input`。这样在不修改`form`组件实现的情况下，只要保证各个`input`的接口表现一致，就能保证逻辑组件可以正常工作。
 
+### 属性/接口注入
+
+用于在实例构造完毕后需要依赖的场景。在组件配置中，通过properties配置来声明属性/接口依赖：
+
+下面是一个例子：
+
+```js
+var factory = new SanFactory({
+    san: san,
+    components: {
+        test: {
+            template: '<h4>Hello {{name}}</h4>',
+            setAdder: function (adder) {
+                this.add = adder;
+            }
+        }
+    }
+});
+var instance = factory.createInstance({
+    component: 'test',
+    options: {
+        data: {
+            name: 'San'
+        }
+    },
+    properties: {
+        // 当属性名
+        adder: function (a, b) {
+            return a + b + 10;
+        },
+
+        max: function (a, b) {
+            return Math.max(a, b);
+        }
+    }
+});
+
+instance.add(5, 10);        // 25
+instance.max(5, 10);        // 10
+```
+
+`createInstance`方法会根据声明创建对应的依赖，按照以下步骤将依赖注入给实例：
+
+- 当定义`properties`字段时，`createInstance`方法将查找属性名称对应的setter方法(set${Name})，将依赖作为参数传入，返回。如上例中，`instanceConfig.properties.adder`作为参数传入了`factoryConfig.components.test.setAdder`，最终创建了`instance.add`方法。
+- 若实例不存在属性setter，则直接通过赋值的方式将依赖注入给实例，即：instance.propertyName = propertyValue。如上例中，`instanceConfig.properties.max`方法，直接创建了`instance.max`方法。
+
 API
 ----
 
@@ -262,11 +308,12 @@ API
 `参数`
 
 - `string` instanceConfig.component - 组件类名称，与factoryConfig.components的key对应
+- `Object?` instanceConfig.properties - 注入实例属性的对象
 - `Object?` instanceConfig.options - 实例创建时的参数，详见[San文档](https://baidu.github.io/san/doc/api/#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%8F%82%E6%95%B0)
 
-#### getComponentClassByName
+#### getComponentClass
 
-`描述`：{Function} getComponentClassByName({string}name)
+`描述`：{Function} getComponentClass({string}name)
 
 `说明`
 
@@ -276,9 +323,9 @@ API
 
 - `string` name - 组件类名称，与factoryConfig.components的key对应
 
-#### getComponentClassByProto
+#### defineComponent
 
-`描述`：{Function} getComponentClassByProto({Object}componentClassProto)
+`描述`：{Function} defineComponent({Object}componentClassProto)
 
 `说明`
 
