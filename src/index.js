@@ -3,7 +3,8 @@
  * Copyright 2018 Baidu Inc. All rights reserved.
  *
  * @file san 组件工厂
- * @author errorrik
+ * @author errorrik <errorrik@gmail.com>
+ *         LeuisKen(leuisken@gmail.com)
  */
 
 (function (root) {
@@ -52,7 +53,7 @@
             if (properties.hasOwnProperty(key)) {
                 var method = 'set' + key.slice(0, 1).toUpperCase() + key.slice(1);
                 var property = properties[key];
-                var setter = this.config.components[method];
+                var setter = this.config.components[component][method];
 
                 if (typeof setter === 'function') {
                     setter.call(instance, properties[key]);
