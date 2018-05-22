@@ -75,11 +75,10 @@ describe('createInsance', function () {
             san: san,
             components: {
                 test: {
-                    template: '<h4>Hello {{name}}</h4>'
-                },
-
-                setAdder: function (adder) {
-                    this.add = adder;
+                    template: '<h4>Hello {{name}}</h4>',
+                    setAdder: function (adder) {
+                        this.add = adder;
+                    }
                 }
             }
         });
