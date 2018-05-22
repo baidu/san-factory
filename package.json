@@ -2,6 +2,16 @@
   "name": "san-factory",
   "version": "0.0.1",
   "description": "Component Factory for San",
+  "contributors": [
+    {
+      "name": "erik",
+      "email": "errorrik@gmail.com"
+    },
+    {
+      "name": "LeuisKen",
+      "email": "leuisken@gmail.com"
+    }
+  ],
   "scripts": {
     "build": "rm -rf dist && mkdir dist && cp src/index.js dist/san-factory.source.js && uglifyjs dist/san-factory.source.js -mco dist/san-factory.js"
   },
@@ -16,7 +26,6 @@
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.5.2"
   },
-  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "https://github.com/ecomfe/san-factory.git"
