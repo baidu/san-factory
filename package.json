@@ -1,9 +1,19 @@
 {
   "name": "san-factory",
   "version": "0.0.1",
-  "description": "Application State Management for San",
+  "description": "Component Factory for San",
+  "contributors": [
+    {
+      "name": "erik",
+      "email": "errorrik@gmail.com"
+    },
+    {
+      "name": "LeuisKen",
+      "email": "leuisken@gmail.com"
+    }
+  ],
   "scripts": {
-    "build": "rm -rf dist && cp src/index.js dist/san-factory.source.js && uglifyjs dist/san-factory.source.js -mco dist/san-factory.js"
+    "build": "rm -rf dist && mkdir dist && cp src/index.js dist/san-factory.source.js && uglifyjs dist/san-factory.source.js -mco dist/san-factory.js"
   },
   "main": "dist/san-factory.source.js",
   "unpkg": "dist/san-factory",
@@ -15,8 +25,6 @@
     "uglify-js": "^2.7.5",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.5.2"
-  },
-  "dependencies": {
   },
   "repository": {
     "type": "git",
