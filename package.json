@@ -1,6 +1,6 @@
 {
   "name": "san-factory",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Component Factory for San",
   "contributors": [
     {
@@ -28,7 +28,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/ecomfe/san-factory.git"
+    "url": "https://github.com/baidu/san-factory.git"
   },
   "license": "MIT"
 }
