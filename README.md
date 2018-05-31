@@ -26,7 +26,10 @@ export default class MyComponent extends san.Component {
 }
 ```
 
-这样编写的组件有一个限制，那就是在组件的实现中，静态地依赖了`san`的实现，因此也就无法满足动态注入`san`实现的场景。同时，如果组件内部实现依赖了其他的子组件，这个依赖也是静态的，没有办法动态地去替换子组件的实现。
+这样编写的组件有一些限制：
+
+- 在组件的实现中，静态地依赖了`san`的实现，因此也就无法满足动态注入`san`实现的场景
+- 如果组件内部实现依赖了其他的子组件，这个依赖也是静态的，没有办法动态地去替换子组件的实现。
 
 san-factory 就是在这样的需求下诞生的。你可以从下面找到 san-factory 的下载和使用说明，也可以直接通过 [测试用例](./test/index.spec.js) 查看其是如何使用的。
 
@@ -117,7 +120,7 @@ require.config({
 
 ### 基本使用
 
-san-factor 对外提供一个 SanFactory 的组件工厂类，这个类接收一个 factoryConfig 配置对象。该对象包含两个属性，`san`是你传入的`san`框架实现，`components`是你传入的组件prototype对象集合。
+san-factor 对外提供一个 `SanFactory` 的组件工厂类，这个类接收一个 `factoryConfig` 配置对象。该对象包含两个属性，`san`是你传入的 [San](https://baidu.github.io/san/) 框架实现，`components` 是你传入的组件 prototype 对象集合。
 
 下面是一个基本的示例：
 
@@ -132,7 +135,7 @@ var factory = new SanFactory({
 });
 ```
 
-你可以使用`createInstance`方法，来获取`test`组件的一个实例：
+你可以使用 `createInstance` 方法，来获取 test 组件的一个实例：
 
 ```js
 var instance = factory.createInstance({
@@ -155,7 +158,7 @@ var instance = factory.createInstance({
 instance.attach(document.body);
 ```
 
-当然，如果你想直接获取`test`组件的构造函数，可以通过`getComponentClass`直接获取。
+当然，如果你想直接获取 test 组件的构造函数，可以通过 `getComponentClass` 直接获取。
 
 ```js
 var ComponentClass = factory.getComponentClass('test');
@@ -189,7 +192,7 @@ var Article = san.defineComponent({
 });
 ```
 
-在 san-factory 中，components 字段支持的类型更加灵活，除了组件类和之外，你可以使用组件原型对象和对应`factoryConfig.components`对象中配置key字符串来配置依赖，如下面的例子：
+在 san-factory 中，`components` 字段支持的类型更加灵活，除了组件类和之外，你可以使用组件原型对象和对应 `factoryConfig.components` 对象中配置key字符串来配置依赖，如下面的例子：
 
 **使用组件原型对象**
 
@@ -209,7 +212,7 @@ var factory = new SanFactory({
 });
 ```
 
-**使用factoryConfig.components对象的key值**
+**使用 factoryConfig.components 对象的 key 值**
 
 ```js
 var factory = new SanFactory({
@@ -237,7 +240,7 @@ var factory = new SanFactory({
 
 ### 属性/接口注入
 
-用于在实例构造完毕后需要依赖的场景。在组件配置中，通过properties配置来声明属性/接口依赖：
+用于在实例构造完毕后需要依赖的场景。在组件配置中，通过 `properties` 配置来声明属性/接口依赖：
 
 下面是一个例子：
 
@@ -253,6 +256,7 @@ var factory = new SanFactory({
         }
     }
 });
+
 var instance = factory.createInstance({
     component: 'test',
     options: {
@@ -323,14 +327,4 @@ API
 
 - `string` name - 组件类名称，与factoryConfig.components的key对应
 
-#### defineComponent
 
-`描述`：{Function} defineComponent({Object}componentClassProto)
-
-`说明`
-
-将组件类的prototype对象包装成san的组件类
-
-`参数`
-
-- `Object` componentClassProto - 待包装的组件类prototype对象，用法参考`factoryConfig.components`中的组件原型
