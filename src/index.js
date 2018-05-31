@@ -40,7 +40,7 @@
         }
 
         var component = instanceConfig.component;
-        var ComponentClass = component ? this.getComponentClass(component) : null;
+        var ComponentClass = component && this.getComponentClass(component);
 
         if (!ComponentClass) {
             return;
@@ -53,10 +53,9 @@
             if (properties.hasOwnProperty(key)) {
                 var method = 'set' + key.slice(0, 1).toUpperCase() + key.slice(1);
                 var property = properties[key];
-                var setter = this.config.components[component][method];
 
-                if (typeof setter === 'function') {
-                    setter.call(instance, properties[key]);
+                if (typeof instance[method] === 'function') {
+                    instance[method](properties[key]);
                 }
                 else {
                     instance[key] = property;
@@ -144,10 +143,7 @@
      * @return {boolean} 是否符合预期
      */
     function isEnvValid(config) {
-        if (config.san && config.components) {
-            return true;
-        }
-        return false;
+        return config.san && config.components;
     }
 
     // export
