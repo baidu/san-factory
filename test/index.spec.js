@@ -142,6 +142,38 @@ describe('createInsance', function () {
         instance.dispose();
     });
 
+    it('should support add components', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div><x-child name="{{name}}"/></div>',
+                    components: {
+                        'x-child': 'child'
+                    }
+                }
+            }
+        });
+
+        factory.addComponents({
+            child: {
+                template: '<h4>Hello {{name}}</h4>'
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
+        instance.dispose();
+    });
+
     it('should support child component with plain object', function () {
         var factory = new SanFactory({
             san: san,

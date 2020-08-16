@@ -150,6 +150,16 @@
     };
 
     /**
+     * 动态增加组件对象集合
+     *
+     * @param components 需要增加的组件prototype对象集合
+     */
+    SanFactory.prototype.addComponents = function (components) {
+        this.config.components = this.config.components || {};
+        Object.assign(this.config.components, components);
+    };
+
+    /**
      * 检测config对象是否符合预期
      *
      * @param {Object} config 工厂类config对象
