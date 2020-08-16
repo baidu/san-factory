@@ -328,3 +328,16 @@ API
 - `string` name - 组件类名称，与factoryConfig.components的key对应
 
 
+#### addComponents
+
+`描述`：{Function} addComponents({Object}components)
+
+`说明`
+
+动态增加组件对象集合
+
+`参数`
+
+- `Object` components - 组件prototype对象集合
+
+
