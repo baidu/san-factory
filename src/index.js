@@ -150,13 +150,33 @@
     };
 
     /**
+     * 动态增加组件对象
+     *
+     * @param {string} name 组件名称
+     * @param {Object} component 组件prototype对象
+     */
+    SanFactory.prototype.addComponent = function (name, component) {
+        if (!isEnvValid(this.config)) {
+            return;
+        }
+
+        // 如果组件名称已经存在则忽略
+        if (!this.config.components[name]) {
+            this.config.components[name] = component;
+        }
+    };
+
+    /**
      * 动态增加组件对象集合
      *
      * @param components 需要增加的组件prototype对象集合
      */
     SanFactory.prototype.addComponents = function (components) {
-        this.config.components = this.config.components || {};
-        Object.assign(this.config.components, components);
+        for (var name in components) {
+            if (components.hasOwnProperty(name)) {
+                this.addComponent(name, components[name]);
+            }
+        }
     };
 
     /**

@@ -142,7 +142,7 @@ describe('createInsance', function () {
         instance.dispose();
     });
 
-    it('should support add components', function () {
+    it('should support add component', function () {
         var factory = new SanFactory({
             san: san,
             components: {
@@ -155,8 +155,15 @@ describe('createInsance', function () {
             }
         });
 
+        factory.addComponent('child', {
+            template: '<div><x-child name="{{name}}"/></div>',
+            components: {
+                'x-child': 'hello'
+            }
+        });
+
         factory.addComponents({
-            child: {
+            hello: {
                 template: '<h4>Hello {{name}}</h4>'
             }
         });
