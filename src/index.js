@@ -19,6 +19,8 @@
      */
     function SanFactory(factoryConfig) {
         this.config = factoryConfig || {};
+        this.config.components = this.config.components || {};
+        
         // 用于缓存生成好的构造类的对象
         this.ComponentClasses = {};
 
@@ -78,7 +80,7 @@
      * @return {Function}
      */
     SanFactory.prototype.getComponentClass = function (name) {
-        if (!isEnvValid(this.config)) {
+        if (!this.config.san) {
             return;
         }
 
@@ -103,7 +105,7 @@
      * @return {Function} 组件类
      */
     SanFactory.prototype.defineComponent = function (componentClassProto, name) {
-        if (!isEnvValid(this.config)) {
+        if (!this.config.san) {
             return;
         }
 
@@ -156,10 +158,6 @@
      * @param {Object} component 组件prototype对象
      */
     SanFactory.prototype.addComponent = function (name, component) {
-        if (!isEnvValid(this.config)) {
-            return;
-        }
-
         // 如果组件名称已经存在则忽略
         if (!this.config.components[name]) {
             this.config.components[name] = component;
@@ -178,16 +176,6 @@
             }
         }
     };
-
-    /**
-     * 检测config对象是否符合预期
-     *
-     * @param {Object} config 工厂类config对象
-     * @return {boolean} 是否符合预期
-     */
-    function isEnvValid(config) {
-        return config.san && config.components;
-    }
 
     // export
     if (typeof exports === 'object' && typeof module === 'object') {
