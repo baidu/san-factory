@@ -21,6 +21,9 @@
         this.config = factoryConfig || {};
         // 用于缓存生成好的构造类的对象
         this.ComponentClasses = {};
+
+        // 用于缓存已处理的组件 components
+        this.componentsCache = {};
     }
 
     SanFactory.version = '1.0.0';
@@ -87,7 +90,7 @@
         }
 
         var componentClassProto = this.config.components[name];
-        var realComponentClass = this.defineComponent(componentClassProto);
+        var realComponentClass = this.defineComponent(componentClassProto, name);
         ComponentClasses[name] = realComponentClass;
         return realComponentClass;
     };
@@ -96,9 +99,10 @@
      * 将组件类的prototype对象包装成san的组件类
      *
      * @param {Object} componentClassProto 待包装的组件类prototype对象
+     * @param {string} name 组件类名称，与factoryConfig.components的key对应
      * @return {Function} 组件类
      */
-    SanFactory.prototype.defineComponent = function (componentClassProto) {
+    SanFactory.prototype.defineComponent = function (componentClassProto, name) {
         if (!isEnvValid(this.config)) {
             return;
         }
@@ -116,6 +120,13 @@
                 else {
                     var realComponents = {};
                     realComponentClassProto.components = realComponents;
+
+                    // 如果已经处理过
+                    if (name && this.componentsCache[name]) {
+                        continue;
+                    }
+
+                    this.componentsCache[name] = realComponents;
 
                     for (var cmptKey in protoItem) {
                         var cmptItem = protoItem[cmptKey];
@@ -136,6 +147,36 @@
             }
         }
         return this.config.san.defineComponent(realComponentClassProto);
+    };
+
+    /**
+     * 动态增加组件对象
+     *
+     * @param {string} name 组件名称
+     * @param {Object} component 组件prototype对象
+     */
+    SanFactory.prototype.addComponent = function (name, component) {
+        if (!isEnvValid(this.config)) {
+            return;
+        }
+
+        // 如果组件名称已经存在则忽略
+        if (!this.config.components[name]) {
+            this.config.components[name] = component;
+        }
+    };
+
+    /**
+     * 动态增加组件对象集合
+     *
+     * @param components 需要增加的组件prototype对象集合
+     */
+    SanFactory.prototype.addComponents = function (components) {
+        for (var name in components) {
+            if (components.hasOwnProperty(name)) {
+                this.addComponent(name, components[name]);
+            }
+        }
     };
 
     /**

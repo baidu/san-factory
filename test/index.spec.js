@@ -142,6 +142,45 @@ describe('createInsance', function () {
         instance.dispose();
     });
 
+    it('should support add component', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div><x-child name="{{name}}"/></div>',
+                    components: {
+                        'x-child': 'child'
+                    }
+                }
+            }
+        });
+
+        factory.addComponent('child', {
+            template: '<div><x-child name="{{name}}"/></div>',
+            components: {
+                'x-child': 'hello'
+            }
+        });
+
+        factory.addComponents({
+            hello: {
+                template: '<h4>Hello {{name}}</h4>'
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
+        instance.dispose();
+    });
+
     it('should support child component with plain object', function () {
         var factory = new SanFactory({
             san: san,
@@ -224,6 +263,46 @@ describe('createInsance', function () {
         });
         instance.attach(document.body);
         expect(instance.el.getElementsByTagName('h4')[0].innerHTML).toBe('Hello San');
+        instance.dispose();
+    });
+
+    it('should support circular reference component', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div>'
+                        + '<h4>Test {{name}}</h4>'
+                        + '<x-child s-if="name" name="{{name}}" />'
+                        + '</div>',
+                    components: {
+                        'x-child': 'child'
+                    }
+                },
+
+                child: {
+                    template: '<div>'
+                        + '<h4>Child {{name}}</h4>'
+                        + '<x-test></x-test>'
+                        + '</div>',
+                    components: {
+                        'x-text': 'test'
+                    }
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+        expect([].slice.call(instance.el.getElementsByTagName('h4')).map(el => el.innerHTML).join(','))
+            .toBe('Test San,Child San');
         instance.dispose();
     });
 });
