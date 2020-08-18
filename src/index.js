@@ -25,7 +25,7 @@
         this.ComponentClasses = {};
     }
 
-    SanFactory.version = '1.0.0';
+    SanFactory.version = '1.0.1';
 
     /**
      * 创建组件实例
