@@ -266,7 +266,7 @@ describe('createInsance', function () {
         instance.dispose();
     });
 
-    it('should support circular reference component', function () {
+    it('should support circular sub component', function () {
         var factory = new SanFactory({
             san: san,
             components: {
@@ -301,8 +301,89 @@ describe('createInsance', function () {
             }
         });
         instance.attach(document.body);
-        expect([].slice.call(instance.el.getElementsByTagName('h4')).map(el => el.innerHTML).join(','))
-            .toBe('Test San,Child San');
+
+        var h4s = instance.el.getElementsByTagName('h4');
+        expect(h4s[0].innerHTML).toBe('Test San');
+        expect(h4s[1].innerHTML).toBe('Child San');
+
+        var ClassTest = factory.getComponentClass('test');
+        var ClassChild = factory.getComponentClass('child');
+        expect(ClassTest.prototype.components['x-child'] === ClassChild).toBeTruthy();
+        expect(ClassChild.prototype.components['x-test'] === ClassTest).toBeTruthy();
+
+        instance.dispose();
+    });
+
+    it('should support complex circular sub component', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                root: {
+                    template: '<div>'
+                        + '<x-main name="{{name}}" />'
+                        + '</div>',
+                    components: {
+                        'x-main': 'main'
+                    }
+                },
+
+                main: {
+                    template: '<div>'
+                        + '<h4>main {{name}}</h4>'
+                        + '<x-child s-if="name" name="{{name}}" />'
+                        + '</div>',
+                    components: {
+                        'x-child': 'child'
+                    }
+                },
+
+                child: {
+                    template: '<div>'
+                        + '<h4>child {{name}}</h4>'
+                        + '<x-subchild name="{{name}}"></x-subchild>'
+                        + '</div>',
+                    components: {
+                        'x-subchild': 'subchild'
+                    }
+                },
+
+                subchild: {
+                    template: '<div>'
+                        + '<h4>subchild {{name}}</h4>'
+                        + '<x-main/>'
+                        + '</div>',
+                    components: {
+                        'x-main': 'main'
+                    }
+                }
+            }
+        });
+
+        var ClassChild = factory.getComponentClass('child');
+        var ClassMain = factory.getComponentClass('main');
+        var ClassSubChild = factory.getComponentClass('subchild');
+        var ClassRoot = factory.getComponentClass('root');
+        expect(ClassMain.prototype.components['x-child'] === ClassChild).toBeTruthy();
+        expect(ClassChild.prototype.components['x-subchild'] === ClassSubChild).toBeTruthy();
+        expect(ClassSubChild.prototype.components['x-main'] === ClassMain).toBeTruthy();
+        expect(ClassRoot.prototype.components['x-main'] === ClassMain).toBeTruthy();
+
+
+        var instance = factory.createInstance({
+            component: 'root',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+
+        var h4s = instance.el.getElementsByTagName('h4');
+        expect(h4s[0].innerHTML).toBe('main San');
+        expect(h4s[1].innerHTML).toBe('child San');
+        expect(h4s[2].innerHTML).toBe('subchild San');
+        
         instance.dispose();
     });
 });
