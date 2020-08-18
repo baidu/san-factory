@@ -286,7 +286,7 @@ describe('createInsance', function () {
                         + '<x-test></x-test>'
                         + '</div>',
                     components: {
-                        'x-text': 'test'
+                        'x-test': 'test'
                     }
                 }
             }
