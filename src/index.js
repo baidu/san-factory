@@ -20,12 +20,9 @@
     function SanFactory(factoryConfig) {
         this.config = factoryConfig || {};
         this.config.components = this.config.components || {};
-        
-        // 用于缓存生成好的构造类的对象
-        this.ComponentClasses = {};
 
-        // 用于缓存已处理的组件 components
-        this.componentsCache = {};
+        // 已定义完成的组件类
+        this.ComponentClasses = {};
     }
 
     SanFactory.version = '1.0.0';
@@ -80,75 +77,11 @@
      * @return {Function}
      */
     SanFactory.prototype.getComponentClass = function (name) {
-        if (!this.config.san) {
-            return;
+        if (name && this.ComponentClasses[name]) {
+            return this.ComponentClasses[name];
         }
 
-        var ComponentClasses = this.ComponentClasses;
-
-        // 如果有缓存
-        if (ComponentClasses[name]) {
-            return ComponentClasses[name];
-        }
-
-        var componentClassProto = this.config.components[name];
-        var realComponentClass = this.defineComponent(componentClassProto, name);
-        ComponentClasses[name] = realComponentClass;
-        return realComponentClass;
-    };
-
-    /**
-     * 将组件类的prototype对象包装成san的组件类
-     *
-     * @param {Object} componentClassProto 待包装的组件类prototype对象
-     * @param {string} name 组件类名称，与factoryConfig.components的key对应
-     * @return {Function} 组件类
-     */
-    SanFactory.prototype.defineComponent = function (componentClassProto, name) {
-        if (!this.config.san) {
-            return;
-        }
-
-        var realComponentClassProto = {};
-        for (var key in componentClassProto) {
-            if (componentClassProto.hasOwnProperty(key)) {
-                var protoItem = componentClassProto[key];
-
-                if (key !== 'components') {
-                    realComponentClassProto[key] = protoItem;
-                }
-                // 处理 components 中的 string
-                // 构造并替换为实际的组件类
-                else {
-                    var realComponents = {};
-                    realComponentClassProto.components = realComponents;
-
-                    // 如果已经处理过
-                    if (name && this.componentsCache[name]) {
-                        continue;
-                    }
-
-                    this.componentsCache[name] = realComponents;
-
-                    for (var cmptKey in protoItem) {
-                        var cmptItem = protoItem[cmptKey];
-                        // self 或者 组件的构造器时，不用重新 getComponentClass
-                        if (cmptItem === 'self' || typeof cmptItem === 'function') {
-                            realComponents[cmptKey] = cmptItem;
-                        }
-                        // 非 self 的字符串，直接调用 getComponentClass
-                        else if (typeof cmptItem === 'string') {
-                            realComponents[cmptKey] = this.getComponentClass(cmptItem);
-                        }
-                        // 其他情况（proto对象），则调用wrapper包装
-                        else {
-                            realComponents[cmptKey] = this.defineComponent(cmptItem);
-                        }
-                    }
-                }
-            }
-        }
-        return this.config.san.defineComponent(realComponentClassProto);
+        return defineComponent(this, this.config.components[name], name);
     };
 
     /**
@@ -176,6 +109,60 @@
             }
         }
     };
+
+    /**
+     * 将组件类的prototype对象包装成san的组件类
+     *
+     * @inner
+     * @param {SanFactory} factory 工厂实例
+     * @param {Object} proto 待包装的组件类prototype对象
+     * @param {string=} name 组件名称
+     * @return {Function} 组件类
+     */
+    function defineComponent(factory, proto, name) {
+        if (!factory.config.san || !proto) {
+            return;
+        }
+
+        var realProto = {
+            components: {}
+        };
+        var subComponents;
+
+        for (var key in proto) {
+            if (proto.hasOwnProperty(key)) {
+                if (key === 'components') {
+                    subComponents = proto[key];
+                }
+                else {
+                    realProto[key] = proto[key];
+                }
+            }
+        }
+
+        var ComponentClass = factory.config.san.defineComponent(realProto);
+        if (name) {
+            factory.ComponentClasses[name] = ComponentClass;
+        }
+
+        for (var cmptKey in subComponents) {
+            var cmptItem = subComponents[cmptKey];
+            // self 或者 组件的构造器时，不用重新 getComponentClass
+            if (cmptItem === 'self' || typeof cmptItem === 'function') {
+                realProto.components[cmptKey] = cmptItem;
+            }
+            // 非 self 的字符串，直接调用 getComponentClass
+            else if (typeof cmptItem === 'string') {
+                realProto.components[cmptKey] = factory.getComponentClass(cmptItem);
+            }
+            // 其他情况（proto对象），则调用wrapper包装
+            else {
+                realProto.components[cmptKey] = defineComponent(factory, cmptItem);
+            }
+        }
+        
+        return ComponentClass;
+    }
 
     // export
     if (typeof exports === 'object' && typeof module === 'object') {
