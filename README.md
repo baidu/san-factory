@@ -353,3 +353,16 @@ API
 - `Object` components - 组件 prototype 对象集合，格式同 factoryConfig.components
 
 
+## ChangeLogs
+
+
+### 1.0.1
+
+- [feat] 增加 `addComponent` 和 `addComponents` 方法
+- [feat] 支持子组件循环引用
+
+
+## License
+
+San is [MIT licensed](./LICENSE).
+
