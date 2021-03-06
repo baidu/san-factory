@@ -70,6 +70,39 @@ describe('createInstance', function () {
         });
     });
 
+    it('by proto', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                child: {
+                    template: '<button>'
+                        + '{{name}}'
+                        + '</button>'
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: {
+                template: '<div><x-child name="{{name}}"></x-child></div>',
+                components: {
+                    'x-child': 'child'
+                }
+            },
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+
+        instance.attach(document.body);
+        var btn = instance.el.getElementsByTagName('button');
+        expect(btn[0].innerHTML).toBe('San');
+
+        instance.dispose();
+    });
+
     it('setter and property inject', function () {
         var factory = new SanFactory({
             san: san,
@@ -433,5 +466,6 @@ describe('createInstance', function () {
 
         instance.dispose();
     });
+
 
 });
