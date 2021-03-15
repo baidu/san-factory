@@ -362,8 +362,8 @@ API
 - [feat] 增加 `addComponent` 和 `addComponents` 方法
 - [feat] 支持子组件循环引用
 
-### 1.0.2
-- [feat] `createInstance` 支持通过 prototype 对象创建实例
+### 1.1.0
+- [feat] `createInstance` 支持通过 组件原型对象 创建实例
 
 ## License
 
