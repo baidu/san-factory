@@ -25,7 +25,7 @@
         this.ComponentClasses = {};
     }
 
-    SanFactory.version = '1.0.1';
+    SanFactory.version = '1.1.0';
 
     /**
      * 创建组件实例
@@ -40,18 +40,20 @@
      * @return {san.Component}
      */
     SanFactory.prototype.createInstance = function (instanceConfig) {
-        if (typeof instanceConfig !== 'object') {
+        if (typeof instanceConfig !== 'object' || !instanceConfig.component) {
             return;
         }
 
         var component = instanceConfig.component;
 
         var ComponentClass;
-        if (typeof component === 'object') {
-            ComponentClass = defineComponent(this, component);
-        }
-        else if (typeof component === 'string') {
-            ComponentClass = this.getComponentClass(component);
+        switch (typeof component) {
+            case 'string':
+                ComponentClass = this.getComponentClass(component);
+                break;
+
+            case 'object':
+                ComponentClass = defineComponent(this, component);
         }
 
         if (!ComponentClass) {
@@ -168,7 +170,7 @@
                 realProto.components[cmptKey] = defineComponent(factory, cmptItem);
             }
         }
-        
+
         return ComponentClass;
     }
 
