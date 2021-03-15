@@ -31,7 +31,8 @@
      * 创建组件实例
      *
      * @param {Object} instanceConfig 实例创建的配置对象
-     * @param {string} instanceConfig.component 组件类名称，与factoryConfig.components的key对应
+     * @param {string|Object} instanceConfig.component 当为string时，组件类名称，与factoryConfig.components的key对应
+     *                        当为Object时，组件原型对象，会创建匿名组件实例，组件类不会注册在factory中
      * @param {Object?} instanceConfig.properties 注入实例属性的对象
      * @param {Object?} instanceConfig.options 实例创建时的参数
      * @param {Object?} instanceConfig.options.data 实例创建的初始化数据
@@ -44,7 +45,14 @@
         }
 
         var component = instanceConfig.component;
-        var ComponentClass = component && this.getComponentClass(component);
+
+        var ComponentClass;
+        if (typeof component === 'object') {
+            ComponentClass = defineComponent(this, component);
+        }
+        else if (typeof component === 'string') {
+            ComponentClass = this.getComponentClass(component);
+        }
 
         if (!ComponentClass) {
             return;

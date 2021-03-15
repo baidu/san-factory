@@ -17,7 +17,7 @@ describe('main', function () {
     });
 });
 
-describe('createInsance', function () {
+describe('createInstance', function () {
     it('by data option', function () {
         var factory = new SanFactory({
             san: san,
@@ -68,6 +68,39 @@ describe('createInsance', function () {
             instance.dispose();
             done();
         });
+    });
+
+    it('by proto', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                child: {
+                    template: '<button>'
+                        + '{{name}}'
+                        + '</button>'
+                }
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: {
+                template: '<div><x-child name="{{name}}"></x-child></div>',
+                components: {
+                    'x-child': 'child'
+                }
+            },
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+
+        instance.attach(document.body);
+        var btn = instance.el.getElementsByTagName('button');
+        expect(btn[0].innerHTML).toBe('San');
+
+        instance.dispose();
     });
 
     it('setter and property inject', function () {
@@ -383,7 +416,56 @@ describe('createInsance', function () {
         expect(h4s[0].innerHTML).toBe('main San');
         expect(h4s[1].innerHTML).toBe('child San');
         expect(h4s[2].innerHTML).toBe('subchild San');
-        
         instance.dispose();
     });
+
+    it('should support circular sub component added by factory.addComponent', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                test: {
+                    template: '<div>'
+                        + '<h4>Test {{name}}</h4>'
+                        + '<x-child s-if="name" name="{{name}}" />'
+                        + '</div>',
+                    components: {
+                        'x-child': 'child'
+                    }
+                }
+            }
+        });
+
+        factory.addComponent('child', {
+            template: '<div>'
+                + '<h4>Child {{name}}</h4>'
+                + '<x-test></x-test>'
+                + '</div>',
+            components: {
+                'x-test': 'test'
+            }
+        });
+
+        var instance = factory.createInstance({
+            component: 'test',
+            options: {
+                data: {
+                    name: 'San'
+                }
+            }
+        });
+        instance.attach(document.body);
+
+        var h4s = instance.el.getElementsByTagName('h4');
+        expect(h4s[0].innerHTML).toBe('Test San');
+        expect(h4s[1].innerHTML).toBe('Child San');
+
+        var ClassTest = factory.getComponentClass('test');
+        var ClassChild = factory.getComponentClass('child');
+        expect(ClassTest.prototype.components['x-child'] === ClassChild).toBeTruthy();
+        expect(ClassChild.prototype.components['x-test'] === ClassTest).toBeTruthy();
+
+        instance.dispose();
+    });
+
+
 });

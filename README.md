@@ -311,7 +311,8 @@ API
 
 `参数`
 
-- `string` instanceConfig.component - 组件类名称，与factoryConfig.components的key对应
+- `string|Object` instanceConfig.component - string类型时，为组件类名称，与factoryConfig.components的key对应；
+    Object类型时，组件原型对象，会创建匿名组件实例，组件类不会注册在factory中
 - `Object?` instanceConfig.properties - 注入实例属性的对象
 - `Object?` instanceConfig.options - 实例创建时的参数，详见[San文档](https://baidu.github.io/san/doc/api/#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%8F%82%E6%95%B0)
 
@@ -361,6 +362,8 @@ API
 - [feat] 增加 `addComponent` 和 `addComponents` 方法
 - [feat] 支持子组件循环引用
 
+### 1.0.2
+- [feat] `createInstance` 支持通过 prototype 对象创建实例
 
 ## License
 
