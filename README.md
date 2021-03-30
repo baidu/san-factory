@@ -328,6 +328,18 @@ API
 
 - `string` name - 组件类名称，与factoryConfig.components的key对应
 
+#### getAllComponentClasses
+
+`描述`：{Object} getAllComponentClasses()
+
+`说明`
+
+获取所有已注册组件的组件类
+
+`返回值`
+
+- `Object` - 组件类对象，key 为组件类名称，value 为组件类
+
 #### addComponent
 
 `描述`：{Function} addComponent({string}name, {Object}component)
@@ -364,6 +376,9 @@ API
 
 ### 1.1.0
 - [feat] `createInstance` 支持通过 组件原型对象 创建实例
+
+### 1.1.1
+- [feat] 增加 `getAllComponentClasses` 方法
 
 ## License
 
