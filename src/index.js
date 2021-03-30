@@ -101,7 +101,7 @@
      */
     SanFactory.prototype.getAllComponentClasses = function () {
         for (var name in this.config.components) {
-            this.property.getComponentClass(name);
+            this.getComponentClass(name);
         }
 
         return this.ComponentClasses;
