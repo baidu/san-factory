@@ -357,17 +357,19 @@ API
 
 ## ChangeLogs
 
-
 ### 1.0.1
 
 - [feat] 增加 `addComponent` 和 `addComponents` 方法
 - [feat] 支持子组件循环引用
 
 ### 1.1.0
+
 - [feat] `createInstance` 支持通过 组件原型对象 创建实例
 
 ### 1.1.1
-- [feat] 增加 `getAllComponentClasses` 方法
+
+- [feat] 增加 `_getAllComponentClasses` 方法
+
 
 ## License
 
