@@ -95,6 +95,19 @@
     };
 
     /**
+     * 获取所有组件类
+     *
+     * @return {Object} 组件类map
+     */
+    SanFactory.prototype.getAllComponentClasses = function () {
+        for (var name in this.config.components) {
+            this.getComponentClass(name);
+        }
+
+        return this.ComponentClasses;
+    };
+
+    /**
      * 动态增加组件对象
      *
      * @param {string} name 组件名称

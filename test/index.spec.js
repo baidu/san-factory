@@ -469,3 +469,74 @@ describe('createInstance', function () {
 
 
 });
+
+describe('get component class', function () {
+    it('get component class by name', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                root: {
+                    template: '<div>'
+                        + '<x-child-a/>'
+                        + '<x-child-b/>'
+                        + '</div>',
+                    components: {
+                        'x-child-a': 'childA',
+                        'x-child-b': 'childB'
+                    }
+                },
+                childA: {
+                    template: '<button>a</button>'
+                },
+                childB: {
+                    template: '<span><x-button/></span>',
+                    components: {
+                        'x-button': 'childA'
+                    }
+                }
+            }
+        });
+
+        var Root = factory.getComponentClass('root');
+        var ChildA = factory.getComponentClass('childA');
+        var ChildB = factory.getComponentClass('childB');
+        expect(typeof Root).toBe('function');
+        expect(Root.prototype.components['x-child-a'] === ChildA).toBeTruthy();
+        expect(ChildB.prototype.components['x-button'] === ChildA).toBeTruthy();
+    });
+
+    it('get all component classes', function () {
+        var factory = new SanFactory({
+            san: san,
+            components: {
+                root: {
+                    template: '<div>'
+                        + '<x-child-a/>'
+                        + '<x-child-b/>'
+                        + '</div>',
+                    components: {
+                        'x-child-a': 'childA',
+                        'x-child-b': 'childB'
+                    }
+                },
+                childA: {
+                    template: '<button>a</button>'
+                },
+                childB: {
+                    template: '<span><x-button/></span>',
+                    components: {
+                        'x-button': 'childA'
+                    }
+                }
+            }
+        });
+
+        var Components = factory.getAllComponentClasses();
+        var Root = Components.root;
+        var ChildA = Components.childA;
+        var ChildB = Components.childB;
+        expect(typeof Root).toBe('function');
+        expect(Root.prototype.components['x-child-a'] === ChildA).toBeTruthy();
+        expect(ChildB.prototype.components['x-button'] === ChildA).toBeTruthy();
+    });
+});
