@@ -25,7 +25,7 @@
         this.ComponentClasses = {};
     }
 
-    SanFactory.version = '1.1.0';
+    SanFactory.version = '1.1.1';
 
     /**
      * 创建组件实例
@@ -97,7 +97,7 @@
     /**
      * 获取所有组件类
      *
-     * @return {Object} 组件类map
+     * @return {Object} 组件类集合
      */
     SanFactory.prototype._getAllComponentClasses = function () {
         var componentClasses = {};
