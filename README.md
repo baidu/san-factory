@@ -328,17 +328,6 @@ API
 
 - `string` name - 组件类名称，与factoryConfig.components的key对应
 
-#### getAllComponentClasses
-
-`描述`：{Object} getAllComponentClasses()
-
-`说明`
-
-获取所有已注册组件的组件类
-
-`返回值`
-
-- `Object` - 组件类对象，key 为组件类名称，value 为组件类
 
 #### addComponent
 
