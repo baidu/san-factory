@@ -99,12 +99,14 @@
      *
      * @return {Object} 组件类map
      */
-    SanFactory.prototype.getAllComponentClasses = function () {
+    SanFactory.prototype._getAllComponentClasses = function () {
+        var componentClasses = {};
+
         for (var name in this.config.components) {
-            this.getComponentClass(name);
+            componentClasses[name] = this.getComponentClass(name);
         }
 
-        return this.ComponentClasses;
+        return componentClasses;
     };
 
     /**

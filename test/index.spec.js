@@ -505,7 +505,7 @@ describe('get component class', function () {
         expect(ChildB.prototype.components['x-button'] === ChildA).toBeTruthy();
     });
 
-    it('get all component classes', function () {
+    it('get all component classes, unpublic', function () {
         var factory = new SanFactory({
             san: san,
             components: {
@@ -531,12 +531,13 @@ describe('get component class', function () {
             }
         });
 
-        var Components = factory.getAllComponentClasses();
+        var Components = factory._getAllComponentClasses();
         var Root = Components.root;
         var ChildA = Components.childA;
         var ChildB = Components.childB;
         expect(typeof Root).toBe('function');
         expect(Root.prototype.components['x-child-a'] === ChildA).toBeTruthy();
+        expect(Root.prototype.components['x-child-b'] === ChildB).toBeTruthy();
         expect(ChildB.prototype.components['x-button'] === ChildA).toBeTruthy();
     });
 });
