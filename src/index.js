@@ -135,6 +135,9 @@
         }
     };
 
+    function Empty() {
+    }
+
     /**
      * 将组件类的prototype对象包装成san的组件类
      *
@@ -149,9 +152,21 @@
             return;
         }
 
-        var realProto = {
-            components: {}
+        var SanComponent = factory.config.san.Component;
+        Empty.prototype = SanComponent.prototype;
+        var realProto = new Empty();
+        realProto._cmptReady = true;
+        realProto.components = {};
+
+        var ComponentClass = function (option) {
+            SanComponent.call(this, option);
         };
+        ComponentClass.prototype = realProto;
+        realProto.constructor = ComponentClass;
+        if (name) {
+            factory.ComponentClasses[name] = ComponentClass;
+        }
+
         var subComponents;
 
         for (var key in proto) {
@@ -165,24 +180,25 @@
             }
         }
 
-        var ComponentClass = factory.config.san.defineComponent(realProto);
-        if (name) {
-            factory.ComponentClasses[name] = ComponentClass;
-        }
 
         for (var cmptKey in subComponents) {
             var cmptItem = subComponents[cmptKey];
-            // self 或者 组件的构造器时，不用重新 getComponentClass
-            if (cmptItem === 'self' || typeof cmptItem === 'function') {
-                realProto.components[cmptKey] = cmptItem;
-            }
-            // 非 self 的字符串，直接调用 getComponentClass
-            else if (typeof cmptItem === 'string') {
-                realProto.components[cmptKey] = factory.getComponentClass(cmptItem);
-            }
-            // 其他情况（proto对象），则调用wrapper包装
-            else {
-                realProto.components[cmptKey] = defineComponent(factory, cmptItem);
+
+            switch (typeof cmptItem) {
+                // self 或者 组件的构造器时，不用重新 getComponentClass
+                case 'string':
+                    realProto.components[cmptKey] = cmptItem === 'self'
+                        ? ComponentClass
+                        : factory.getComponentClass(cmptItem);
+                    break;
+
+                case 'function':
+                    realProto.components[cmptKey] = cmptItem;
+                    break;
+
+                // 其他情况（proto对象），则调用wrapper包装
+                default:
+                    realProto.components[cmptKey] = defineComponent(factory, cmptItem);
             }
         }
 
