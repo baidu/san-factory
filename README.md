@@ -370,6 +370,11 @@ API
 
 - [feat] 增加 `_getAllComponentClasses` 方法
 
+### 1.1.2
+
+- [opti] 优化组件类定义过程，以提升性能
+- [opti] 增加子组件 ready 标记，避免组件编译过程再次遍历处理子组件
+
 
 ## License
 
